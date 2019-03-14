@@ -1,8 +1,9 @@
-let db;
-const guestData = [ { hello } ];
+//some sample data
+const guestData = [ { email: 'asiemer@hotmail.com', name: 'Andy Siemer', notes: 'hey there' } ];
 
 //the database reference
-//initializes the database
+let db;
+
 //initializes the database
 function initDatabase() {
 	//create a unified variable for the browser variant
@@ -19,7 +20,6 @@ function initDatabase() {
 
 	//attempt to open the database
 	let request = window.indexedDB.open('guests', 1);
-
 	request.onerror = function(event) {
 		console.log(event);
 	};
@@ -40,6 +40,23 @@ function initDatabase() {
 		}
 	};
 }
+function readAll() {
+	var objectStore = db.transaction('guest').objectStore('guest');
+
+	//creates a cursor which iterates through each record
+	objectStore.openCursor().onsuccess = function(event) {
+		var cursor = event.target.result;
+
+		if (cursor) {
+			console.log('Name: ' + cursor.value.name + ', Email: ' + cursor.value.email);
+			addEntry(cursor.value.name, cursor.value.email, cursor.value.notes);
+			cursor.continue();
+		} else {
+			console.log('No more entries!');
+		}
+	};
+}
+
 function add() {
 	var name = document.querySelector('#first').value + ' ' + document.querySelector('#last').value;
 	var email = document.querySelector('#email').value;
@@ -48,8 +65,16 @@ function add() {
 	console.log(name + email + notes);
 	var request = db
 		.transaction([ 'guest' ], 'readwrite')
-		.objectStore('guest', { keyPath: 'email' })
+		.objectStore('guest')
 		.add({ name: name, email: email, notes: notes });
-}
 
+	readAll();
+}
+function addEntry(name, email, notes) {
+	// Your existing code unmodified...
+	var iDiv = document.createElement('div');
+	iDiv.className = 'entry';
+	iDiv.innerHTML = name + ' ' + email + '<BR>' + notes + '<HR>';
+	document.querySelector('#entries').appendChild(iDiv);
+}
 initDatabase();
