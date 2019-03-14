@@ -19,7 +19,7 @@ function initDatabase() {
 	}
 
 	//attempt to open the database
-	let request = window.indexedDB.open('guests', 1);
+	let request = window.indexedDB.open('guestbook', 1);
 	request.onerror = function(event) {
 		console.log(event);
 	};
@@ -33,7 +33,7 @@ function initDatabase() {
 	//if no database, create one and fill it with data
 	request.onupgradeneeded = function(event) {
 		var db = event.target.result;
-		var objectStore = db.createObjectStore('guest', { keyPath: 'email' });
+		var objectStore = db.createObjectStore('guests', { keyPath: 'email' });
 
 		for (var i in guestData) {
 			objectStore.add(guestData[i]);
@@ -41,7 +41,7 @@ function initDatabase() {
 	};
 }
 function readAll() {
-	var objectStore = db.transaction('guest').objectStore('guest');
+	var objectStore = db.transaction('guests').objectStore('guests');
 
 	//creates a cursor which iterates through each record
 	objectStore.openCursor().onsuccess = function(event) {
@@ -64,10 +64,10 @@ function add() {
 
 	console.log(name + email + notes);
 	var request = db
-		.transaction([ 'guest' ], 'readwrite')
-		.objectStore('guest')
+		.transaction([ 'guests' ], 'readwrite')
+		.objectStore('guests')
 		.add({ name: name, email: email, notes: notes });
-
+	clearList();
 	readAll();
 }
 function addEntry(name, email, notes) {
@@ -77,4 +77,8 @@ function addEntry(name, email, notes) {
 	iDiv.innerHTML = name + ' ' + email + '<BR>' + notes + '<HR>';
 	document.querySelector('#entries').appendChild(iDiv);
 }
+function clearList() {
+	document.querySelector('#entries').innerHTML = '';
+}
 initDatabase();
+readAll();
